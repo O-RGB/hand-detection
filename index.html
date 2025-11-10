@@ -130,7 +130,7 @@
 
       faceDetection.setOptions({
         model: "short",
-        minDetectionConfidence: 0.5,
+        minDetectionConfidence: 0.7,
       });
 
       // ตั้งค่า Hand Detection
@@ -140,9 +140,9 @@
       });
 
       hands.setOptions({
-        maxNumHands: 2,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.5,
+        maxNumHands: 1,
+        modelComplexity: 0,
+        minDetectionConfidence: 0.7,
         minTrackingConfidence: 0.5,
       });
 
@@ -229,7 +229,11 @@
       async function startCamera() {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: 640, height: 480 },
+            video: {
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+              frameRate: { ideal: 30, max: 30 },
+            },
           });
           video.srcObject = stream;
 
@@ -243,8 +247,10 @@
       }
 
       async function processFrame() {
-        await faceDetection.send({ image: video });
-        await hands.send({ image: video });
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+          await faceDetection.send({ image: video });
+          await hands.send({ image: video });
+        }
         requestAnimationFrame(processFrame);
       }
 
